@@ -1,41 +1,48 @@
+//  main.swift
+//  RestServer
+//  Created by Fahad Alswailem on 10/25/20.
+
 import Kitura
 import Cocoa
-import Foundation
 
 let router = Router()
+let dbObj = Database.getInstance()
 
 router.all("/ClaimService/add", middleware: BodyParser())
 
 router.get("/"){
     request, response, next in
-    response.send("Hello! Welcome to visit the service. ")
+    response.send("Hello! Welcome to the service.")
     next()
 }
 
-
+//.get - getAll
 router.get("ClaimService/getAll"){
     request, response, next in
-    let pList = ClaimDao().getAll()
-    // JSON Serialization
-    let jsonData : Data = try JSONEncoder().encode(pList)
-    //JSONArray
+    
+    let cList = ClaimDao().getAll()
+    let jsonData : Data = try JSONEncoder().encode(cList)
     let jsonStr = String(data: jsonData, encoding: .utf8)
-    // set Content-Type
-    response.status(.OK)
-    response.headers["Content-Type"] = "application/json"
+
+  //  response.status(.OK)
+  //  response.headers["Content-Type"] = "application/json"
     response.send(jsonStr)
     next()
 }
 
+//.post - add
 router.post("ClaimService/add") {
     request, response, next in
-    // JSON deserialization on Kitura server
+
     let body = request.body
     let jObj = body?.asJSON //JSON object
+    
     if let jDict = jObj as? [String:String] {
         if let T = jDict["title"],
             let D = jDict["date"]{
-            let cObj = Claim(UUID: UUID().uuidString, t: T, d: D, s: 0)
+            let id = UUID()
+            let S = false
+            let cObj = Claim(UUID: id.uuidString, t: T, d: D, s: S)
             ClaimDao().addClaim(cObj: cObj)
         }
     }
@@ -43,7 +50,5 @@ router.post("ClaimService/add") {
     next()
 }
 
-
 Kitura.addHTTPServer(onPort: 8020, with: router)
 Kitura.run()
-

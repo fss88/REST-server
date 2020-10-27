@@ -1,18 +1,17 @@
-//
 //  Database.swift
 //  RestServer
-//
 //  Created by Fahad Alswailem on 10/25/20.
-//
 
 import SQLite3
 import Foundation
 
 class Database {
+    
     static var dbObj : Database!
-    let dbname = "/Users/fs/Desktop/ClaimDB.sqlite"
-    var conn : OpaquePointer!
+    let dbname = "/Users/fs/Desktop/ClaimDB.sqlite" //DataBase Directory
+    var conn : OpaquePointer?
 
+    //Initialize DB
     init() {
         if sqlite3_open(dbname, &conn) == SQLITE_OK {
             initializeDB()
@@ -22,29 +21,35 @@ class Database {
             print("Open database failed due to error \(errcode)")
         }
     }
-
+    
+    //Create Table
     private func initializeDB() {
-        let sqlStmt = "create table if not exists Claim (id text, title text, date text, isSolved int)"
+        //SQL
+        let sqlStmt = "create table if not exists Claim (id int, title text, date text, isSolved int)"
         if sqlite3_exec(conn, sqlStmt, nil, nil, nil) != SQLITE_OK {
             let errcode = sqlite3_errcode(conn)
             print("Create table failed due to error \(errcode)")
         }
     }
-
+    
+    //Connect to DB
     func getDbConnection() -> OpaquePointer? {
         var conn : OpaquePointer?
+        
         if sqlite3_open(dbname, &conn) == SQLITE_OK {
             return conn
         } else {
             let errcode = sqlite3_errcode(conn)
-            let errmsg = sqlite3_errmsg(conn)
             print("Open database failed due to error \(errcode)")
-            print("Open database failed due to error \(errmsg!)")
-            let _ = String(format:"%@", errmsg!)
             
+            let errmsg = sqlite3_errmsg(conn)
+            print("Open database failed due to error \(errmsg!)")
+            
+            let _ = String(format:"%@", errmsg!)
         }
         return conn
     }
+    
     
     static func getInstance() -> Database {
         if dbObj == nil {
